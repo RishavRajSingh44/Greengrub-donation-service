@@ -25,9 +25,6 @@ public class Donation {
     @Embedded
     private UserDetail userDetail;
 
-    @Embedded
-    private Email email;
-
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime creationDate;

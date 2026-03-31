@@ -1,10 +1,8 @@
 package com.greengrub.donationService.service.Impl;
 
 import com.greengrub.donationService.dto.DonationDTO;
-import com.greengrub.donationService.dto.EmailDTO;
 import com.greengrub.donationService.dto.UserDetailDTO;
 import com.greengrub.donationService.entity.Donation;
-import com.greengrub.donationService.entity.Email;
 import com.greengrub.donationService.entity.UserDetail;
 import com.greengrub.donationService.exception.DonationNotFoundException;
 import com.greengrub.donationService.repository.DonationRepository;
@@ -51,7 +49,6 @@ public class DonationServiceImpl implements DonationService {
 
         donation.setDonationName(request.getDonationName());
         donation.setUserDetail(mapToUserDetailEntity(request.getUserDetail()));
-        donation.setEmail(mapToEmailEntity(request.getEmail()));
         donation.setStatus(request.getStatus());
 
         Donation updatedDonation = donationRepository.save(donation);
@@ -71,7 +68,6 @@ public class DonationServiceImpl implements DonationService {
         Donation donation = new Donation();
         donation.setDonationName(dto.getDonationName());
         donation.setUserDetail(mapToUserDetailEntity(dto.getUserDetail()));
-        donation.setEmail(mapToEmailEntity(dto.getEmail()));
         donation.setStatus(dto.getStatus());
         return donation;
     }
@@ -81,7 +77,6 @@ public class DonationServiceImpl implements DonationService {
         dto.setId(donation.getId());
         dto.setDonationName(donation.getDonationName());
         dto.setUserDetail(mapToUserDetailDTO(donation.getUserDetail()));
-        dto.setEmail(mapToEmailDTO(donation.getEmail()));
         dto.setCreationDate(donation.getCreationDate());
         dto.setUpdateDate(donation.getUpdateDate());
         dto.setStatus(donation.getStatus());
@@ -90,21 +85,11 @@ public class DonationServiceImpl implements DonationService {
 
     private UserDetail mapToUserDetailEntity(UserDetailDTO dto) {
         if (dto == null) return null;
-        return new UserDetail(dto.getFirstName(), dto.getLastName(), dto.getPhoneNumber());
+        return new UserDetail(dto.getFirstName(), dto.getLastName(), dto.getPhoneNumber(), dto.getEmailAddress());
     }
 
     private UserDetailDTO mapToUserDetailDTO(UserDetail userDetail) {
         if (userDetail == null) return null;
-        return new UserDetailDTO(userDetail.getFirstName(), userDetail.getLastName(), userDetail.getPhoneNumber());
-    }
-
-    private Email mapToEmailEntity(EmailDTO dto) {
-        if (dto == null) return null;
-        return new Email(dto.getEmailAddress());
-    }
-
-    private EmailDTO mapToEmailDTO(Email email) {
-        if (email == null) return null;
-        return new EmailDTO(email.getEmailAddress());
+        return new UserDetailDTO(userDetail.getFirstName(), userDetail.getLastName(), userDetail.getPhoneNumber(), userDetail.getEmailAddress());
     }
 }

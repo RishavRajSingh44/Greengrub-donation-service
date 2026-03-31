@@ -29,11 +29,6 @@ public class DonationDTO {
     @Schema(description = "Personal details of the donor")
     private UserDetailDTO userDetail;
 
-    @NotNull(message = "Email is required")
-    @Valid
-    @Schema(description = "Contact email of the donor")
-    private EmailDTO email;
-
     @Schema(description = "Timestamp when the donation was created", accessMode = Schema.AccessMode.READ_ONLY)
     private LocalDateTime creationDate;
 
