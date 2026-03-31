@@ -1,0 +1,210 @@
+{
+  "info": {
+    "name": "GreenGrub - Donation Service",
+    "description": "API collection for the GreenGrub Donation Service. Handles CRUD operations for food donations.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8081",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Create Donation",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/donation",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "donation"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"donationName\": \"Wedding Buffet Leftovers\",\n  \"userDetail\": {\n    \"firstName\": \"Jane\",\n    \"lastName\": \"Doe\",\n    \"phoneNumber\": \"9876543210\"\n  },\n  \"email\": {\n    \"emailAddress\": \"jane.doe@example.com\"\n  },\n  \"status\": \"PENDING\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [
+        {
+          "name": "201 - Donation Created",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"id\": 1,\n  \"donationName\": \"Wedding Buffet Leftovers\",\n  \"userDetail\": {\n    \"firstName\": \"Jane\",\n    \"lastName\": \"Doe\",\n    \"phoneNumber\": \"9876543210\"\n  },\n  \"email\": {\n    \"emailAddress\": \"jane.doe@example.com\"\n  },\n  \"creationDate\": \"2026-03-27T10:00:00\",\n  \"updationDate\": \"2026-03-27T10:00:00\",\n  \"status\": \"PENDING\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Get All Donations",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/donation",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "donation"]
+        }
+      },
+      "response": [
+        {
+          "name": "200 - List of Donations",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "[\n  {\n    \"id\": 1,\n    \"donationName\": \"Wedding Buffet Leftovers\",\n    \"userDetail\": {\n      \"firstName\": \"Jane\",\n      \"lastName\": \"Doe\",\n      \"phoneNumber\": \"9876543210\"\n    },\n    \"email\": {\n      \"emailAddress\": \"jane.doe@example.com\"\n    },\n    \"creationDate\": \"2026-03-27T10:00:00\",\n    \"updationDate\": \"2026-03-27T10:00:00\",\n    \"status\": \"PENDING\"\n  },\n  {\n    \"id\": 2,\n    \"donationName\": \"Restaurant End-of-Day Surplus\",\n    \"userDetail\": {\n      \"firstName\": \"John\",\n      \"lastName\": \"Smith\",\n      \"phoneNumber\": \"9123456780\"\n    },\n    \"email\": {\n      \"emailAddress\": \"john.smith@example.com\"\n    },\n    \"creationDate\": \"2026-03-27T11:00:00\",\n    \"updationDate\": \"2026-03-27T11:00:00\",\n    \"status\": \"ACTIVE\"\n  }\n]"
+        }
+      ]
+    },
+    {
+      "name": "Get Donation by ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/donation/1",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "donation", "1"]
+        }
+      },
+      "response": [
+        {
+          "name": "200 - Donation Found",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"id\": 1,\n  \"donationName\": \"Wedding Buffet Leftovers\",\n  \"userDetail\": {\n    \"firstName\": \"Jane\",\n    \"lastName\": \"Doe\",\n    \"phoneNumber\": \"9876543210\"\n  },\n  \"email\": {\n    \"emailAddress\": \"jane.doe@example.com\"\n  },\n  \"creationDate\": \"2026-03-27T10:00:00\",\n  \"updationDate\": \"2026-03-27T10:00:00\",\n  \"status\": \"PENDING\"\n}"
+        },
+        {
+          "name": "404 - Donation Not Found",
+          "status": "Not Found",
+          "code": 404,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"timestamp\": \"2026-03-27T10:05:00\",\n  \"status\": 404,\n  \"error\": \"Donation Not Found\",\n  \"message\": \"Donation not found with id: 99\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Update Donation",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/donation/1",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "donation", "1"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"donationName\": \"Wedding Buffet Leftovers (Updated)\",\n  \"userDetail\": {\n    \"firstName\": \"Jane\",\n    \"lastName\": \"Doe\",\n    \"phoneNumber\": \"9876543210\"\n  },\n  \"email\": {\n    \"emailAddress\": \"jane.updated@example.com\"\n  },\n  \"status\": \"ACTIVE\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [
+        {
+          "name": "200 - Donation Updated",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"id\": 1,\n  \"donationName\": \"Wedding Buffet Leftovers (Updated)\",\n  \"userDetail\": {\n    \"firstName\": \"Jane\",\n    \"lastName\": \"Doe\",\n    \"phoneNumber\": \"9876543210\"\n  },\n  \"email\": {\n    \"emailAddress\": \"jane.updated@example.com\"\n  },\n  \"creationDate\": \"2026-03-27T10:00:00\",\n  \"updationDate\": \"2026-03-27T10:30:00\",\n  \"status\": \"ACTIVE\"\n}"
+        },
+        {
+          "name": "404 - Donation Not Found",
+          "status": "Not Found",
+          "code": 404,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"timestamp\": \"2026-03-27T10:05:00\",\n  \"status\": 404,\n  \"error\": \"Donation Not Found\",\n  \"message\": \"Donation not found with id: 99\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Delete Donation",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/donation/1",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "donation", "1"]
+        }
+      },
+      "response": [
+        {
+          "name": "200 - Deleted Successfully",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "Donation deleted successfully"
+        },
+        {
+          "name": "404 - Donation Not Found",
+          "status": "Not Found",
+          "code": 404,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"timestamp\": \"2026-03-27T10:05:00\",\n  \"status\": 404,\n  \"error\": \"Donation Not Found\",\n  \"message\": \"Donation not found with id: 99\"\n}"
+        }
+      ]
+    }
+  ]
+}
