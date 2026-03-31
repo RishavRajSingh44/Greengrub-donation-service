@@ -97,7 +97,7 @@ ACTIVE ──► CLAIMED
 
 ## API Endpoints
 
-Base URL: `http://localhost:8081/api/donation`
+Base URL: `http://localhost:8083/api/donation`
 
 | Method | Endpoint | Description |
 |---|---|---|
@@ -241,7 +241,7 @@ Default local config (see [Environment Configuration](#environment-configuration
 mvn spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
-The service starts on **port 8081**.
+The service starts on **port 8083**.
 
 ---
 
@@ -249,7 +249,7 @@ The service starts on **port 8081**.
 
 | Property | Default (local) | Description |
 |---|---|---|
-| `server.port` | `8081` | Port the service runs on |
+| `server.port` | `8083` | Port the service runs on |
 | `spring.datasource.url` | `jdbc:postgresql://localhost:5432/greengrub` | PostgreSQL connection URL |
 | `spring.datasource.username` | `postgres` | Database username |
 | `spring.datasource.password` | `postgres` | Database password |
@@ -263,5 +263,5 @@ Interactive API documentation is available once the service is running:
 
 | | URL |
 |---|---|
-| Swagger UI | `http://localhost:8081/swagger-ui/index.html` |
-| OpenAPI JSON | `http://localhost:8081/v3/api-docs` |
+| Swagger UI | `http://localhost:8083/swagger-ui/index.html` |
+| OpenAPI JSON | `http://localhost:8083/v3/api-docs` |
