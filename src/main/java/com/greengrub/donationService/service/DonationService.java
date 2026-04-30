@@ -1,6 +1,8 @@
 package com.greengrub.donationService.service;
 
 import com.greengrub.donationService.dto.DonationDTO;
+import com.greengrub.donationService.entity.DonationStatus;
+
 import java.util.List;
 
 public interface DonationService {
@@ -9,9 +11,15 @@ public interface DonationService {
 
     List<DonationDTO> getAllDonation();
 
-    DonationDTO getDonationById(Long id);
+    DonationDTO getDonationById(String id);
 
-    DonationDTO updateDonation(Long id, DonationDTO request);
+    DonationDTO updateDonation(String id, DonationDTO request);
 
-    void deleteDonation(Long id);
+    void deleteDonation(String id);
+
+    DonationDTO updateDonationStatus(String id, DonationStatus status);
+
+    List<DonationDTO> getDonationsByStatus(DonationStatus status);
+
+    List<DonationDTO> getDonationsByDonorId(String userId);
 }
