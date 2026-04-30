@@ -4,6 +4,7 @@ import com.greengrub.donationService.dto.DonationDTO;
 import com.greengrub.donationService.dto.QuantityDTO;
 import com.greengrub.donationService.dto.UserDetailDTO;
 import com.greengrub.donationService.entity.Donation;
+import com.greengrub.donationService.entity.DonationStatus;
 import com.greengrub.donationService.entity.Quantity;
 import com.greengrub.donationService.entity.UserDetail;
 import com.greengrub.donationService.exception.DonationNotFoundException;
@@ -67,30 +68,6 @@ public class DonationServiceImpl implements DonationService {
         Donation donation = donationRepository.findById(id)
             .orElseThrow(() -> new DonationNotFoundException(id));
         donationRepository.delete(donation);
-    }
-
-    @Override
-    public DonationDTO updateDonationStatus(String id, DonationStatus status) {
-        Donation donation = donationRepository.findById(id)
-            .orElseThrow(() -> new DonationNotFoundException(id));
-        donation.setStatus(status);
-        return mapToDTO(donationRepository.save(donation));
-    }
-
-    @Override
-    public List<DonationDTO> getDonationsByStatus(DonationStatus status) {
-        return donationRepository.findByStatus(status)
-            .stream()
-            .map(this::mapToDTO)
-            .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<DonationDTO> getDonationsByDonorId(String userId) {
-        return donationRepository.findByDonarDetailsUserId(userId)
-            .stream()
-            .map(this::mapToDTO)
-            .collect(Collectors.toList());
     }
 
     // ---------------- MAPPING METHODS ----------------
