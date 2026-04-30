@@ -29,6 +29,11 @@ enum DonationStatus {
   CANCELLED = 2;
 }
 
+enum Unit {
+  KG       = 0;
+  SERVINGS = 1;
+}
+
 // ============================================================
 //  SHARED MESSAGES
 // ============================================================
@@ -36,10 +41,16 @@ enum DonationStatus {
 message Empty {}
 
 message UserDetail {
-  string first_name    = 1;
-  string last_name     = 2;
-  string phone_number  = 3;
-  string email_address = 4;
+  string user_id    = 1;
+  string first_name = 2;
+  string last_name  = 3;
+  string email      = 4;
+  string phone      = 5;
+}
+
+message Quantity {
+  double amount = 1;
+  Unit   unit   = 2;
 }
 
 // ============================================================
@@ -47,20 +58,28 @@ message UserDetail {
 // ============================================================
 
 message CreateDonationRequest {
-  string         donation_name = 1;
-  UserDetail     user_detail   = 2;
-  DonationStatus status        = 3;
+  string         donation_name      = 1;
+  UserDetail     donar_details      = 2;
+  string         pick_up_address    = 3;
+  string         pick_up_time       = 4;
+  Quantity       estimated_quantity = 5;
+  repeated string food_items_id     = 6;
+  DonationStatus status             = 7;
 }
 
 message DonationByIdRequest {
-  int64 id = 1;
+  string id = 1;
 }
 
 message UpdateDonationRequest {
-  int64          id            = 1;
-  string         donation_name = 2;
-  UserDetail     user_detail   = 3;
-  DonationStatus status        = 4;
+  string         id                 = 1;
+  string         donation_name      = 2;
+  UserDetail     donar_details      = 3;
+  string         pick_up_address    = 4;
+  string         pick_up_time       = 5;
+  Quantity       estimated_quantity = 6;
+  repeated string food_items_id     = 7;
+  DonationStatus status             = 8;
 }
 
 // ============================================================
@@ -68,12 +87,16 @@ message UpdateDonationRequest {
 // ============================================================
 
 message DonationResponse {
-  int64          id            = 1;
-  string         donation_name = 2;
-  UserDetail     user_detail   = 3;
-  DonationStatus status        = 4;
-  string         creation_date = 5;
-  string         update_date   = 6;
+  string         id                 = 1;
+  string         donation_name      = 2;
+  UserDetail     donar_details      = 3;
+  string         pick_up_address    = 4;
+  string         pick_up_time       = 5;
+  Quantity       estimated_quantity = 6;
+  repeated string food_items_id     = 7;
+  DonationStatus status             = 8;
+  string         creation_date      = 9;
+  string         update_date        = 10;
 }
 
 message DonationListResponse {

@@ -1,8 +1,11 @@
 package com.greengrub.donationService.service.Impl;
 
 import com.greengrub.donationService.dto.DonationDTO;
+import com.greengrub.donationService.dto.QuantityDTO;
 import com.greengrub.donationService.dto.UserDetailDTO;
 import com.greengrub.donationService.entity.Donation;
+import com.greengrub.donationService.entity.DonationStatus;
+import com.greengrub.donationService.entity.Quantity;
 import com.greengrub.donationService.entity.UserDetail;
 import com.greengrub.donationService.exception.DonationNotFoundException;
 import com.greengrub.donationService.repository.DonationRepository;
@@ -11,6 +14,7 @@ import com.greengrub.donationService.service.DonationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,19 +40,23 @@ public class DonationServiceImpl implements DonationService {
     }
 
     @Override
-    public DonationDTO getDonationById(Long id) {
+    public DonationDTO getDonationById(String id) {
         Donation donation = donationRepository.findById(id)
             .orElseThrow(() -> new DonationNotFoundException(id));
         return mapToDTO(donation);
     }
 
     @Override
-    public DonationDTO updateDonation(Long id, DonationDTO request) {
+    public DonationDTO updateDonation(String id, DonationDTO request) {
         Donation donation = donationRepository.findById(id)
             .orElseThrow(() -> new DonationNotFoundException(id));
 
         donation.setDonationName(request.getDonationName());
-        donation.setUserDetail(mapToUserDetailEntity(request.getUserDetail()));
+        donation.setDonarDetails(mapToUserDetailEntity(request.getDonarDetails()));
+        donation.setPickUpAddress(request.getPickUpAddress());
+        donation.setPickUpTime(request.getPickUpTime());
+        donation.setEstimatedQuantity(mapToQuantityEntity(request.getEstimatedQuantity()));
+        donation.setFoodItemsId(request.getFoodItemsId() != null ? request.getFoodItemsId() : new ArrayList<>());
         donation.setStatus(request.getStatus());
 
         Donation updatedDonation = donationRepository.save(donation);
@@ -56,10 +64,34 @@ public class DonationServiceImpl implements DonationService {
     }
 
     @Override
-    public void deleteDonation(Long id) {
+    public void deleteDonation(String id) {
         Donation donation = donationRepository.findById(id)
             .orElseThrow(() -> new DonationNotFoundException(id));
         donationRepository.delete(donation);
+    }
+
+    @Override
+    public DonationDTO updateDonationStatus(String id, DonationStatus status) {
+        Donation donation = donationRepository.findById(id)
+            .orElseThrow(() -> new DonationNotFoundException(id));
+        donation.setStatus(status);
+        return mapToDTO(donationRepository.save(donation));
+    }
+
+    @Override
+    public List<DonationDTO> getDonationsByStatus(DonationStatus status) {
+        return donationRepository.findByStatus(status)
+            .stream()
+            .map(this::mapToDTO)
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<DonationDTO> getDonationsByDonorId(String userId) {
+        return donationRepository.findByDonarDetailsUserId(userId)
+            .stream()
+            .map(this::mapToDTO)
+            .collect(Collectors.toList());
     }
 
     // ---------------- MAPPING METHODS ----------------
@@ -67,7 +99,11 @@ public class DonationServiceImpl implements DonationService {
     private Donation mapToEntity(DonationDTO dto) {
         Donation donation = new Donation();
         donation.setDonationName(dto.getDonationName());
-        donation.setUserDetail(mapToUserDetailEntity(dto.getUserDetail()));
+        donation.setDonarDetails(mapToUserDetailEntity(dto.getDonarDetails()));
+        donation.setPickUpAddress(dto.getPickUpAddress());
+        donation.setPickUpTime(dto.getPickUpTime());
+        donation.setEstimatedQuantity(mapToQuantityEntity(dto.getEstimatedQuantity()));
+        donation.setFoodItemsId(dto.getFoodItemsId() != null ? dto.getFoodItemsId() : new ArrayList<>());
         donation.setStatus(dto.getStatus());
         return donation;
     }
@@ -76,20 +112,34 @@ public class DonationServiceImpl implements DonationService {
         DonationDTO dto = new DonationDTO();
         dto.setId(donation.getId());
         dto.setDonationName(donation.getDonationName());
-        dto.setUserDetail(mapToUserDetailDTO(donation.getUserDetail()));
+        dto.setDonarDetails(mapToUserDetailDTO(donation.getDonarDetails()));
+        dto.setPickUpAddress(donation.getPickUpAddress());
+        dto.setPickUpTime(donation.getPickUpTime());
+        dto.setEstimatedQuantity(mapToQuantityDTO(donation.getEstimatedQuantity()));
+        dto.setFoodItemsId(donation.getFoodItemsId());
+        dto.setStatus(donation.getStatus());
         dto.setCreationDate(donation.getCreationDate());
         dto.setUpdateDate(donation.getUpdateDate());
-        dto.setStatus(donation.getStatus());
         return dto;
     }
 
     private UserDetail mapToUserDetailEntity(UserDetailDTO dto) {
         if (dto == null) return null;
-        return new UserDetail(dto.getFirstName(), dto.getLastName(), dto.getPhoneNumber(), dto.getEmailAddress());
+        return new UserDetail(dto.getUserId(), dto.getFirstName(), dto.getLastName(), dto.getEmail(), dto.getPhone());
     }
 
     private UserDetailDTO mapToUserDetailDTO(UserDetail userDetail) {
         if (userDetail == null) return null;
-        return new UserDetailDTO(userDetail.getFirstName(), userDetail.getLastName(), userDetail.getPhoneNumber(), userDetail.getEmailAddress());
+        return new UserDetailDTO(userDetail.getUserId(), userDetail.getFirstName(), userDetail.getLastName(), userDetail.getEmail(), userDetail.getPhone());
+    }
+
+    private Quantity mapToQuantityEntity(QuantityDTO dto) {
+        if (dto == null) return null;
+        return new Quantity(dto.getAmount(), dto.getUnit());
+    }
+
+    private QuantityDTO mapToQuantityDTO(Quantity quantity) {
+        if (quantity == null) return null;
+        return new QuantityDTO(quantity.getAmount(), quantity.getUnit());
     }
 }
