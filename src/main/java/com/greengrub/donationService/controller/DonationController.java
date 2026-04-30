@@ -1,7 +1,6 @@
 package com.greengrub.donationService.controller;
 
 import com.greengrub.donationService.dto.DonationDTO;
-import com.greengrub.donationService.entity.DonationStatus;
 import com.greengrub.donationService.exception.ErrorResponse;
 import com.greengrub.donationService.service.DonationService;
 
@@ -91,42 +90,5 @@ public class DonationController {
             @PathVariable String id) {
         donationService.deleteDonation(id);
         return ResponseEntity.ok("Donation deleted successfully");
-    }
-
-    @Operation(summary = "Update donation status", description = "Updates only the status of a donation. Use this when a volunteer claims or cancels a donation.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Status updated successfully"),
-            @ApiResponse(responseCode = "404", description = "Donation not found",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    })
-    @PatchMapping("/{id}/status")
-    public ResponseEntity<DonationDTO> updateDonationStatus(
-            @Parameter(description = "UUID of the donation", example = "550e8400-e29b-41d4-a716-446655440000")
-            @PathVariable String id,
-            @Parameter(description = "New status value", example = "CLAIMED")
-            @RequestParam DonationStatus status) {
-        return ResponseEntity.ok(donationService.updateDonationStatus(id, status));
-    }
-
-    @Operation(summary = "Get donations by status", description = "Returns all donations matching the given status. Use ACTIVE to browse available donations.")
-    @ApiResponse(responseCode = "200", description = "Donations retrieved successfully")
-    @GetMapping("/status/{status}")
-    public ResponseEntity<List<DonationDTO>> getDonationsByStatus(
-            @Parameter(description = "Status to filter by", example = "ACTIVE")
-            @PathVariable DonationStatus status) {
-        return ResponseEntity.ok(donationService.getDonationsByStatus(status));
-    }
-
-    @Operation(summary = "Get donations by donor", description = "Returns all donations created by a specific donor using their user ID.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Donations retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "No donations found for this donor",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    })
-    @GetMapping("/donor/{userId}")
-    public ResponseEntity<List<DonationDTO>> getDonationsByDonorId(
-            @Parameter(description = "UUID of the donor", example = "550e8400-e29b-41d4-a716-446655440000")
-            @PathVariable String userId) {
-        return ResponseEntity.ok(donationService.getDonationsByDonorId(userId));
     }
 }

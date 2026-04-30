@@ -70,30 +70,6 @@ public class DonationServiceImpl implements DonationService {
         donationRepository.delete(donation);
     }
 
-    @Override
-    public DonationDTO updateDonationStatus(String id, DonationStatus status) {
-        Donation donation = donationRepository.findById(id)
-            .orElseThrow(() -> new DonationNotFoundException(id));
-        donation.setStatus(status);
-        return mapToDTO(donationRepository.save(donation));
-    }
-
-    @Override
-    public List<DonationDTO> getDonationsByStatus(DonationStatus status) {
-        return donationRepository.findByStatus(status)
-            .stream()
-            .map(this::mapToDTO)
-            .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<DonationDTO> getDonationsByDonorId(String userId) {
-        return donationRepository.findByDonarDetailsUserId(userId)
-            .stream()
-            .map(this::mapToDTO)
-            .collect(Collectors.toList());
-    }
-
     // ---------------- MAPPING METHODS ----------------
 
     private Donation mapToEntity(DonationDTO dto) {
