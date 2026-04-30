@@ -1,6 +1,8 @@
 package com.greengrub.donationService.entity;
 
 import jakarta.persistence.Embeddable;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,15 +13,10 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDetail {
+public class Quantity {
 
-    private String userId;
+    private Double amount;
 
-    private String firstName;
-
-    private String lastName;
-
-    private String email;
-
-    private String phone;
+    @Enumerated(EnumType.STRING)
+    private Unit unit;
 }
