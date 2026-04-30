@@ -35,7 +35,7 @@ public class DonationController {
         return ResponseEntity.ok(donations);
     }
 
-    @Operation(summary = "Get donation by ID", description = "Returns a single donation listing by its ID.")
+    @Operation(summary = "Get donation by ID", description = "Returns a single donation listing by its UUID.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Donation found"),
             @ApiResponse(responseCode = "404", description = "Donation not found",
@@ -43,8 +43,8 @@ public class DonationController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<DonationDTO> getDonationById(
-            @Parameter(description = "ID of the donation to retrieve", example = "1")
-            @PathVariable Long id) {
+            @Parameter(description = "UUID of the donation to retrieve", example = "550e8400-e29b-41d4-a716-446655440000")
+            @PathVariable String id) {
         DonationDTO donation = donationService.getDonationById(id);
         return ResponseEntity.ok(donation);
     }
@@ -71,14 +71,14 @@ public class DonationController {
     })
     @PutMapping("/{id}")
     public ResponseEntity<DonationDTO> updateDonation(
-            @Parameter(description = "ID of the donation to update", example = "1")
-            @PathVariable Long id,
+            @Parameter(description = "UUID of the donation to update", example = "550e8400-e29b-41d4-a716-446655440000")
+            @PathVariable String id,
             @Valid @RequestBody DonationDTO request) {
         DonationDTO updatedDonation = donationService.updateDonation(id, request);
         return ResponseEntity.ok(updatedDonation);
     }
 
-    @Operation(summary = "Delete a donation", description = "Permanently removes a donation listing by its ID.")
+    @Operation(summary = "Delete a donation", description = "Permanently removes a donation listing by its UUID.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Donation deleted successfully"),
             @ApiResponse(responseCode = "404", description = "Donation not found",
@@ -86,8 +86,8 @@ public class DonationController {
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteDonation(
-            @Parameter(description = "ID of the donation to delete", example = "1")
-            @PathVariable Long id) {
+            @Parameter(description = "UUID of the donation to delete", example = "550e8400-e29b-41d4-a716-446655440000")
+            @PathVariable String id) {
         donationService.deleteDonation(id);
         return ResponseEntity.ok("Donation deleted successfully");
     }
