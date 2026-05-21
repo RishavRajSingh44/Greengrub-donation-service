@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/donation")
+@RequestMapping("/api/v1/donations")
 @Tag(name = "Donation", description = "CRUD operations for food donation listings")
 public class DonationController {
 

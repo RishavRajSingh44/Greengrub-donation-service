@@ -97,15 +97,15 @@ ACTIVE ──► CLAIMED
 
 ## API Endpoints
 
-Base URL: `http://localhost:8083/api/donation`
+Base URL: `http://localhost:8083/api/v1/donations`
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `POST` | `/api/donation` | Create a new donation listing |
-| `GET` | `/api/donation` | Get all donation listings |
-| `GET` | `/api/donation/{id}` | Get a donation by ID |
-| `PUT` | `/api/donation/{id}` | Update a donation |
-| `DELETE` | `/api/donation/{id}` | Delete a donation |
+| `POST` | `/api/v1/donations` | Create a new donation listing |
+| `GET` | `/api/v1/donations` | Get all donation listings |
+| `GET` | `/api/v1/donations/{id}` | Get a donation by ID |
+| `PUT` | `/api/v1/donations/{id}` | Update a donation |
+| `DELETE` | `/api/v1/donations/{id}` | Delete a donation |
 
 ---
 
@@ -164,7 +164,7 @@ All errors follow a consistent response structure.
   "status": 404,
   "error": "Donation Not Found",
   "message": "No donation found with ID 99. It may have been deleted or never existed.",
-  "path": "/api/donation/99"
+  "path": "/api/v1/donations/99"
 }
 ```
 
@@ -176,7 +176,7 @@ All errors follow a consistent response structure.
   "status": 400,
   "error": "Validation Failed",
   "message": "One or more fields failed validation. Please review and correct the request.",
-  "path": "/api/donation",
+  "path": "/api/v1/donations",
   "fieldErrors": [
     { "field": "donationName", "message": "Donation name is required" },
     { "field": "email.emailAddress", "message": "Email address must be a valid format (e.g. user@example.com)" }
@@ -192,7 +192,7 @@ All errors follow a consistent response structure.
   "status": 400,
   "error": "Malformed Request Body",
   "message": "Invalid status value 'PENDING'. Accepted values are: ACTIVE, CLAIMED, CANCELLED.",
-  "path": "/api/donation"
+  "path": "/api/v1/donations"
 }
 ```
 
