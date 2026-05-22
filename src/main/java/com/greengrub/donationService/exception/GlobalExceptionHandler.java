@@ -2,7 +2,11 @@ package com.greengrub.donationService.exception;
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.greengrub.donationService.entity.DonationStatus;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -17,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -54,6 +59,24 @@ public class GlobalExceptionHandler {
         );
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ValidationErrorResponse> handleConstraintViolation(
+            ConstraintViolationException ex, HttpServletRequest request) {
+
+        List<ValidationErrorResponse.FieldError> fieldErrors = ex.getConstraintViolations()
+                .stream()
+                .map(cv -> new ValidationErrorResponse.FieldError(
+                        cv.getPropertyPath().toString(), cv.getMessage()))
+                .toList();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ValidationErrorResponse(
+                        LocalDateTime.now(), HttpStatus.BAD_REQUEST.value(),
+                        "Validation Failed",
+                        "One or more fields failed validation.",
+                        request.getRequestURI(), fieldErrors));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
@@ -124,10 +147,39 @@ public class GlobalExceptionHandler {
                 ));
     }
 
+    @ExceptionHandler(DataAccessException.class)
+    public ResponseEntity<ErrorResponse> handleDataAccess(
+            DataAccessException ex, HttpServletRequest request) {
+
+        log.error("Database error on {}", request.getRequestURI(), ex);
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(ErrorResponse.of(
+                        HttpStatus.SERVICE_UNAVAILABLE.value(),
+                        "Database Unavailable",
+                        "The database is temporarily unavailable. Please try again later.",
+                        request.getRequestURI()
+                ));
+    }
+
+    @ExceptionHandler(CallNotPermittedException.class)
+    public ResponseEntity<ErrorResponse> handleCircuitOpen(
+            CallNotPermittedException ex, HttpServletRequest request) {
+
+        log.warn("Circuit breaker open on {}: {}", request.getRequestURI(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(ErrorResponse.of(
+                        HttpStatus.SERVICE_UNAVAILABLE.value(),
+                        "Service Unavailable",
+                        "The service is temporarily unavailable due to repeated failures. Please retry shortly.",
+                        request.getRequestURI()
+                ));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(
             Exception ex, HttpServletRequest request) {
 
+        log.error("Unhandled exception on {}", request.getRequestURI(), ex);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ErrorResponse.of(

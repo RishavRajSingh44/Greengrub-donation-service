@@ -13,7 +13,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,8 +23,11 @@ import java.util.List;
 @Tag(name = "Donation", description = "CRUD operations for food donation listings")
 public class DonationController {
 
-    @Autowired
-    private DonationService donationService;
+    private final DonationService donationService;
+
+    public DonationController(DonationService donationService) {
+        this.donationService = donationService;
+    }
 
     @Operation(summary = "Get all donations", description = "Returns a list of all donation listings on the platform.")
     @ApiResponse(responseCode = "200", description = "Donations retrieved successfully")
