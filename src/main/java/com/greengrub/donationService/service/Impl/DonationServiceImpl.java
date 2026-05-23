@@ -8,30 +8,46 @@ import com.greengrub.donationService.entity.DonationStatus;
 import com.greengrub.donationService.entity.Quantity;
 import com.greengrub.donationService.entity.UserDetail;
 import com.greengrub.donationService.exception.DonationNotFoundException;
+import com.greengrub.donationService.exception.KafkaPublishException;
+import com.greengrub.donationService.kafka.DonationEventDTO;
+import com.greengrub.donationService.kafka.DonationKafkaProducer;
 import com.greengrub.donationService.repository.DonationRepository;
 import com.greengrub.donationService.service.DonationService;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class DonationServiceImpl implements DonationService {
 
-    @Autowired
-    private DonationRepository donationRepository;
+    private final DonationRepository donationRepository;
+    private final DonationKafkaProducer kafkaProducer;
 
-    @Override
-    public DonationDTO createDonation(DonationDTO request) {
-        Donation donation = mapToEntity(request);
-        Donation savedDonation = donationRepository.save(donation);
-        return mapToDTO(savedDonation);
+    public DonationServiceImpl(DonationRepository donationRepository, DonationKafkaProducer kafkaProducer) {
+        this.donationRepository = donationRepository;
+        this.kafkaProducer = kafkaProducer;
     }
 
     @Override
+    @Transactional
+    public DonationDTO createDonation(DonationDTO request) {
+        Donation donation = mapToEntity(request);
+        Donation savedDonation = donationRepository.saveAndFlush(donation);
+        DonationDTO saved = mapToDTO(savedDonation);
+        publishEvent(saved);
+        return saved;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<DonationDTO> getAllDonation() {
         return donationRepository.findAll()
             .stream()
@@ -40,6 +56,7 @@ public class DonationServiceImpl implements DonationService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public DonationDTO getDonationById(String id) {
         Donation donation = donationRepository.findById(id)
             .orElseThrow(() -> new DonationNotFoundException(id));
@@ -47,6 +64,7 @@ public class DonationServiceImpl implements DonationService {
     }
 
     @Override
+    @Transactional
     public DonationDTO updateDonation(String id, DonationDTO request) {
         Donation donation = donationRepository.findById(id)
             .orElseThrow(() -> new DonationNotFoundException(id));
@@ -60,14 +78,76 @@ public class DonationServiceImpl implements DonationService {
         donation.setStatus(request.getStatus());
 
         Donation updatedDonation = donationRepository.save(donation);
-        return mapToDTO(updatedDonation);
+        DonationDTO updated = mapToDTO(updatedDonation);
+        publishEvent(updated);
+        return updated;
     }
 
     @Override
+    @Transactional
     public void deleteDonation(String id) {
         Donation donation = donationRepository.findById(id)
             .orElseThrow(() -> new DonationNotFoundException(id));
+        DonationDTO dto = mapToDTO(donation);
+        publishEvent(dto);
         donationRepository.delete(donation);
+    }
+
+    // Kafka publish is best-effort — DB write is already committed before this runs.
+    // A Kafka failure is logged but never propagated to the caller.
+    private void publishEvent(DonationDTO dto) {
+        try {
+            kafkaProducer.publish(toKafkaEvent(dto));
+        } catch (KafkaPublishException e) {
+            log.warn("Kafka event not published for donation [{}] — donation saved: {}",
+                     dto.getId(), e.getMessage());
+        }
+    }
+
+    // ---------------- KAFKA MAPPING ----------------
+
+    private DonationEventDTO toKafkaEvent(DonationDTO dto) {
+        UserDetailDTO donor = dto.getDonarDetails();
+        String donorName = donor != null
+                ? (donor.getFirstName() + " " + donor.getLastName()).trim()
+                : "";
+        String donorEmail = donor != null ? donor.getEmail() : "";
+
+        BigDecimal totalAmount = dto.getEstimatedQuantity() != null && dto.getEstimatedQuantity().getAmount() != null
+                ? BigDecimal.valueOf(dto.getEstimatedQuantity().getAmount())
+                : BigDecimal.ZERO;
+
+        String unit = dto.getEstimatedQuantity() != null && dto.getEstimatedQuantity().getUnit() != null
+                ? dto.getEstimatedQuantity().getUnit().name()
+                : "";
+
+        int qty = dto.getEstimatedQuantity() != null && dto.getEstimatedQuantity().getAmount() != null
+                ? dto.getEstimatedQuantity().getAmount().intValue()
+                : 0;
+
+        DonationEventDTO.CustomerDTO customer = donor != null
+                ? new DonationEventDTO.CustomerDTO(
+                        donor.getUserId(),
+                        donor.getFirstName(),
+                        donor.getLastName(),
+                        donor.getEmail(),
+                        donor.getPhone())
+                : null;
+
+        List<DonationEventDTO.DonationItemDTO> items = List.of(
+                new DonationEventDTO.DonationItemDTO(dto.getDonationName(), qty, unit, null)
+        );
+
+        return new DonationEventDTO(
+                dto.getId(),
+                donorName,
+                donorEmail,
+                totalAmount,
+                dto.getCreationDate() != null ? dto.getCreationDate() : LocalDateTime.now(),
+                "GreenGrub",
+                customer,
+                items
+        );
     }
 
     // ---------------- MAPPING METHODS ----------------

@@ -25,7 +25,10 @@ jobs:
           cache: maven
 
       - name: Build with Maven
-        run: mvn clean install -DskipTests=false
+        run: mvn clean install -DskipTests=false -s settings.xml
+        env:
+          GITHUB_USERNAME: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   auto-merge:
     name: Auto Merge PR
