@@ -1,7 +1,9 @@
 package com.greengrub.donationService.grpc;
 
+import com.greengrub.donationService.client.FoodServiceClient;
 import com.greengrub.donationService.dto.DonationDTO;
-import com.greengrub.donationService.exception.DonationNotFoundException;
+import com.greengrub.donationService.dto.DonationDetailDTO;
+import com.greengrub.donationService.dto.FoodDetailDTO;
 import com.greengrub.donationService.mapper.DonationProtoMapper;
 import com.greengrub.donationService.service.DonationService;
 import com.greengrub.proto.donation.*;
@@ -17,10 +19,15 @@ public class DonationGrpcService extends DonationServiceGrpc.DonationServiceImpl
 
     private final DonationService donationService;
     private final DonationProtoMapper mapper;
+    private final FoodServiceClient foodServiceClient;
 
-    public DonationGrpcService(DonationService donationService, DonationProtoMapper mapper) {
+    public DonationGrpcService(
+            DonationService donationService,
+            DonationProtoMapper mapper,
+            FoodServiceClient foodServiceClient) {
         this.donationService = donationService;
         this.mapper = mapper;
+        this.foodServiceClient = foodServiceClient;
     }
 
     @Override
@@ -45,7 +52,9 @@ public class DonationGrpcService extends DonationServiceGrpc.DonationServiceImpl
 
     @Override
     public void getDonationById(DonationByIdRequest request, StreamObserver<DonationResponse> responseObserver) {
-        responseObserver.onNext(mapper.toProto(donationService.getDonationById(request.getId())));
+        // gRPC callers get base donation without food hydration (use getFoodItemsByDonationId for enrichment)
+        DonationDetailDTO detail = donationService.getDonationDetail(request.getId(), 0, 10);
+        responseObserver.onNext(mapper.toProto(detail.getDonation()));
         responseObserver.onCompleted();
     }
 
@@ -81,18 +90,34 @@ public class DonationGrpcService extends DonationServiceGrpc.DonationServiceImpl
 
     @Override
     public void getFoodItemsByDonationId(FoodListRequest request, StreamObserver<FoodListResponse> responseObserver) {
-        FoodListResponse.Builder builder = FoodListResponse.newBuilder();
-        for (String foodId : request.getFoodItemIdList()) {
-            builder.addFoods(Food.newBuilder().setFoodId(foodId).build());
+        // Fetch the donation to get the full food ID list, then hydrate from food-service
+        DonationDetailDTO detail = donationService.getDonationDetail(
+                request.getDonationId(),
+                request.getPage(),
+                request.getPageSize() > 0 ? request.getPageSize() : 10);
+
+        FoodListResponse.Builder builder = FoodListResponse.newBuilder()
+                .setTotalCount(detail.getTotalFoodItems())
+                .setPage(detail.getCurrentPage())
+                .setPageSize(detail.getPageSize())
+                .setTotalPages(detail.getTotalPages());
+
+        for (FoodDetailDTO food : detail.getFoodItems()) {
+            builder.addFoods(Food.newBuilder()
+                    .setFoodId(food.getId())
+                    .setFoodName(food.getFoodName())
+                    .setStatus(food.getStatus() != null ? food.getStatus() : "")
+                    .build());
         }
-        builder.setTotalCount(request.getFoodItemIdCount());
+
         responseObserver.onNext(builder.build());
         responseObserver.onCompleted();
     }
 
     @Override
     public void getUsersByDonationId(DonationByIdRequest request, StreamObserver<ListUsersResponse> responseObserver) {
-        DonationDTO dto = donationService.getDonationById(request.getId());
+        DonationDetailDTO detail = donationService.getDonationDetail(request.getId(), 0, 1);
+        DonationDTO dto = detail.getDonation();
         ListUsersResponse.Builder builder = ListUsersResponse.newBuilder();
         if (dto.getDonarDetails() != null) {
             builder.addUsers(mapper.toUserDetailProto(dto.getDonarDetails()));

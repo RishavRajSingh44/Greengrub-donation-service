@@ -1,6 +1,7 @@
 package com.greengrub.donationService.grpc;
 
 import com.greengrub.donationService.exception.DonationNotFoundException;
+import com.greengrub.donationService.exception.FoodServiceException;
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.grpc.*;
 import jakarta.validation.ConstraintViolationException;
@@ -56,6 +57,8 @@ public class GrpcExceptionInterceptor implements ServerInterceptor {
         if (e instanceof ConstraintViolationException ex)
             return Status.INVALID_ARGUMENT.withDescription(
                 ex.getConstraintViolations().iterator().next().getMessage());
+        if (e instanceof FoodServiceException)
+            return Status.UNAVAILABLE.withDescription("food-service temporarily unavailable — please retry");
         if (e instanceof CallNotPermittedException)
             return Status.UNAVAILABLE.withDescription("Service temporarily unavailable — please retry");
         if (e instanceof DataAccessException)

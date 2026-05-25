@@ -15,6 +15,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import com.greengrub.donationService.exception.FoodServiceException;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -157,6 +158,20 @@ public class GlobalExceptionHandler {
                         HttpStatus.SERVICE_UNAVAILABLE.value(),
                         "Database Unavailable",
                         "The database is temporarily unavailable. Please try again later.",
+                        request.getRequestURI()
+                ));
+    }
+
+    @ExceptionHandler(FoodServiceException.class)
+    public ResponseEntity<ErrorResponse> handleFoodServiceUnavailable(
+            FoodServiceException ex, HttpServletRequest request) {
+
+        log.error("food-service unavailable on {}: {}", request.getRequestURI(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(ErrorResponse.of(
+                        HttpStatus.SERVICE_UNAVAILABLE.value(),
+                        "Food Service Unavailable",
+                        "Unable to retrieve food details at this time. Please try again later.",
                         request.getRequestURI()
                 ));
     }

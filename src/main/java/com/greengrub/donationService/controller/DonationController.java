@@ -1,6 +1,7 @@
 package com.greengrub.donationService.controller;
 
 import com.greengrub.donationService.dto.DonationDTO;
+import com.greengrub.donationService.dto.DonationDetailDTO;
 import com.greengrub.donationService.exception.ErrorResponse;
 import com.greengrub.donationService.service.DonationService;
 
@@ -33,22 +34,31 @@ public class DonationController {
     @ApiResponse(responseCode = "200", description = "Donations retrieved successfully")
     @GetMapping
     public ResponseEntity<List<DonationDTO>> getAllDonation() {
-        List<DonationDTO> donations = donationService.getAllDonation();
-        return ResponseEntity.ok(donations);
+        return ResponseEntity.ok(donationService.getAllDonation());
     }
 
-    @Operation(summary = "Get donation by ID", description = "Returns a single donation listing by its UUID.")
+    @Operation(
+        summary = "Get donation detail by ID",
+        description = "Returns a donation with its paginated food items hydrated from food-service. " +
+                      "totalFoodItems in the response is the full count for the table heading. " +
+                      "Food items degrade to an empty list if food-service is temporarily unavailable."
+    )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Donation found"),
             @ApiResponse(responseCode = "404", description = "Donation not found",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "503", description = "Dependent service temporarily unavailable",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @GetMapping("/{id}")
-    public ResponseEntity<DonationDTO> getDonationById(
+    public ResponseEntity<DonationDetailDTO> getDonationDetail(
             @Parameter(description = "UUID of the donation to retrieve", example = "550e8400-e29b-41d4-a716-446655440000")
-            @PathVariable String id) {
-        DonationDTO donation = donationService.getDonationById(id);
-        return ResponseEntity.ok(donation);
+            @PathVariable String id,
+            @Parameter(description = "0-based page index for food items", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Number of food items per page (default 10)", example = "10")
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(donationService.getDonationDetail(id, page, size));
     }
 
     @Operation(summary = "Create a donation", description = "Creates a new food donation listing. Status is set to ACTIVE on creation.")
@@ -59,8 +69,7 @@ public class DonationController {
     })
     @PostMapping
     public ResponseEntity<DonationDTO> createDonation(@Valid @RequestBody DonationDTO request) {
-        DonationDTO createdDonation = donationService.createDonation(request);
-        return ResponseEntity.ok(createdDonation);
+        return ResponseEntity.ok(donationService.createDonation(request));
     }
 
     @Operation(summary = "Update a donation", description = "Updates an existing donation listing. Use this to change status to CLAIMED or CANCELLED.")
@@ -76,8 +85,7 @@ public class DonationController {
             @Parameter(description = "UUID of the donation to update", example = "550e8400-e29b-41d4-a716-446655440000")
             @PathVariable String id,
             @Valid @RequestBody DonationDTO request) {
-        DonationDTO updatedDonation = donationService.updateDonation(id, request);
-        return ResponseEntity.ok(updatedDonation);
+        return ResponseEntity.ok(donationService.updateDonation(id, request));
     }
 
     @Operation(summary = "Delete a donation", description = "Permanently removes a donation listing by its UUID.")

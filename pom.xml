@@ -25,10 +25,32 @@
     <properties>
         <java.version>21</java.version>
         <grpc.version>1.70.0</grpc.version>
+        <spring-cloud-gcp.version>6.2.1</spring-cloud-gcp.version>
+        <spring-grpc.version>0.10.0</spring-grpc.version>
+        <spring-cloud.version>2025.0.0</spring-cloud.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+
+            <!-- Spring Cloud -->
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Spring Cloud GCP -->
+            <dependency>
+                <groupId>com.google.cloud</groupId>
+                <artifactId>spring-cloud-gcp-dependencies</artifactId>
+                <version>${spring-cloud-gcp.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
             <!-- Force all io.grpc artifacts to the same version as proto-contracts -->
             <dependency>
                 <groupId>io.grpc</groupId>
@@ -91,6 +113,12 @@
             <artifactId>spring-kafka</artifactId>
         </dependency>
 
+        <!-- Actuator -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
         <!-- Shared gRPC proto stubs -->
         <dependency>
             <groupId>com.greengrub</groupId>
@@ -105,11 +133,67 @@
             <version>3.1.0.RELEASE</version>
         </dependency>
 
+        <!-- gRPC Spring Boot client (for calling food-service) -->
+        <dependency>
+            <groupId>net.devh</groupId>
+            <artifactId>grpc-client-spring-boot-starter</artifactId>
+            <version>3.1.0.RELEASE</version>
+        </dependency>
+
+        <!-- gRPC core transport -->
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-stub</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-netty-shaded</artifactId>
+        </dependency>
+
+        <!-- Protobuf runtime (must match proto-contracts compile version) -->
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>3.25.5</version>
+        </dependency>
+
         <!-- Required by generated gRPC stubs -->
         <dependency>
             <groupId>javax.annotation</groupId>
             <artifactId>javax.annotation-api</artifactId>
             <version>1.3.2</version>
+        </dependency>
+
+        <!-- AOP — required for Resilience4j annotations (@Retry, @CircuitBreaker) to work -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
+        <!-- Flyway — manages DB schema migrations -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+        </dependency>
+
+        <!-- GCP Cloud SQL (k8s profile — uses Cloud SQL socket factory) -->
+        <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>spring-cloud-gcp-starter-sql-postgresql</artifactId>
+        </dependency>
+
+        <!-- Prometheus metrics for monitoring -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
     </dependencies>
 

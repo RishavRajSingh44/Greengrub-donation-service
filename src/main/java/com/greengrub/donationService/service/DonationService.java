@@ -1,6 +1,8 @@
 package com.greengrub.donationService.service;
 
 import com.greengrub.donationService.dto.DonationDTO;
+import com.greengrub.donationService.dto.DonationDetailDTO;
+
 import java.util.List;
 
 public interface DonationService {
@@ -9,7 +11,8 @@ public interface DonationService {
 
     List<DonationDTO> getAllDonation();
 
-    DonationDTO getDonationById(String id);
+    // Returns enriched donation detail with paginated food items from food-service
+    DonationDetailDTO getDonationDetail(String id, int page, int size);
 
     DonationDTO updateDonation(String id, DonationDTO request);
 
