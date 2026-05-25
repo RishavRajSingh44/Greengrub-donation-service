@@ -1,6 +1,9 @@
 package com.greengrub.donationService.service.Impl;
 
+import com.greengrub.donationService.client.FoodServiceClient;
 import com.greengrub.donationService.dto.DonationDTO;
+import com.greengrub.donationService.dto.DonationDetailDTO;
+import com.greengrub.donationService.dto.FoodDetailDTO;
 import com.greengrub.donationService.dto.QuantityDTO;
 import com.greengrub.donationService.dto.UserDetailDTO;
 import com.greengrub.donationService.entity.Donation;
@@ -13,7 +16,8 @@ import com.greengrub.donationService.kafka.DonationEventDTO;
 import com.greengrub.donationService.kafka.DonationKafkaProducer;
 import com.greengrub.donationService.repository.DonationRepository;
 import com.greengrub.donationService.service.DonationService;
-
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,16 +32,24 @@ import java.util.stream.Collectors;
 @Service
 public class DonationServiceImpl implements DonationService {
 
+    private static final int DEFAULT_PAGE_SIZE = 10;
+
     private final DonationRepository donationRepository;
     private final DonationKafkaProducer kafkaProducer;
+    private final FoodServiceClient foodServiceClient;
 
-    public DonationServiceImpl(DonationRepository donationRepository, DonationKafkaProducer kafkaProducer) {
+    public DonationServiceImpl(
+            DonationRepository donationRepository,
+            DonationKafkaProducer kafkaProducer,
+            FoodServiceClient foodServiceClient) {
         this.donationRepository = donationRepository;
         this.kafkaProducer = kafkaProducer;
+        this.foodServiceClient = foodServiceClient;
     }
 
     @Override
     @Transactional
+    @CircuitBreaker(name = "dbBreaker")
     public DonationDTO createDonation(DonationDTO request) {
         Donation donation = mapToEntity(request);
         Donation savedDonation = donationRepository.saveAndFlush(donation);
@@ -48,6 +60,8 @@ public class DonationServiceImpl implements DonationService {
 
     @Override
     @Transactional(readOnly = true)
+    @Retry(name = "dbRetry")
+    @CircuitBreaker(name = "dbBreaker")
     public List<DonationDTO> getAllDonation() {
         return donationRepository.findAll()
             .stream()
@@ -57,20 +71,44 @@ public class DonationServiceImpl implements DonationService {
 
     @Override
     @Transactional(readOnly = true)
-    public DonationDTO getDonationById(String id) {
+    @Retry(name = "dbRetry")
+    @CircuitBreaker(name = "dbBreaker")
+    public DonationDetailDTO getDonationDetail(String id, int page, int size) {
+        int effectivePage = Math.max(page, 0);
+        int effectiveSize = size > 0 ? size : DEFAULT_PAGE_SIZE;
+
         Donation donation = donationRepository.findById(id)
-            .orElseThrow(() -> new DonationNotFoundException(id));
-        return mapToDTO(donation);
+                .orElseThrow(() -> new DonationNotFoundException(id));
+
+        DonationDTO donationDTO = mapToDTO(donation);
+        List<String> allFoodIds = donation.getFoodItemsId();
+        int totalFoodItems = allFoodIds != null ? allFoodIds.size() : 0;
+
+        // Fetch paginated food details from food-service (degrades to empty list on failure)
+        List<FoodDetailDTO> foodItems = foodServiceClient.getFoodsPage(allFoodIds, effectivePage, effectiveSize);
+
+        int totalPages = totalFoodItems == 0 ? 0
+                : (int) Math.ceil((double) totalFoodItems / effectiveSize);
+
+        return DonationDetailDTO.builder()
+                .donation(donationDTO)
+                .foodItems(foodItems)
+                .totalFoodItems(totalFoodItems)
+                .currentPage(effectivePage)
+                .pageSize(effectiveSize)
+                .totalPages(totalPages)
+                .build();
     }
 
     @Override
     @Transactional
+    @CircuitBreaker(name = "dbBreaker")
     public DonationDTO updateDonation(String id, DonationDTO request) {
         Donation donation = donationRepository.findById(id)
             .orElseThrow(() -> new DonationNotFoundException(id));
 
         donation.setDonationName(request.getDonationName());
-        donation.setDonarDetails(mapToUserDetailEntity(request.getDonarDetails()));
+        donation.setDonerDetails(mapToUserDetailEntity(request.getDonarDetails()));
         donation.setPickUpAddress(request.getPickUpAddress());
         donation.setPickUpTime(request.getPickUpTime());
         donation.setEstimatedQuantity(mapToQuantityEntity(request.getEstimatedQuantity()));
@@ -85,6 +123,7 @@ public class DonationServiceImpl implements DonationService {
 
     @Override
     @Transactional
+    @CircuitBreaker(name = "dbBreaker")
     public void deleteDonation(String id) {
         Donation donation = donationRepository.findById(id)
             .orElseThrow(() -> new DonationNotFoundException(id));
@@ -155,7 +194,7 @@ public class DonationServiceImpl implements DonationService {
     private Donation mapToEntity(DonationDTO dto) {
         Donation donation = new Donation();
         donation.setDonationName(dto.getDonationName());
-        donation.setDonarDetails(mapToUserDetailEntity(dto.getDonarDetails()));
+        donation.setDonerDetails(mapToUserDetailEntity(dto.getDonarDetails()));
         donation.setPickUpAddress(dto.getPickUpAddress());
         donation.setPickUpTime(dto.getPickUpTime());
         donation.setEstimatedQuantity(mapToQuantityEntity(dto.getEstimatedQuantity()));
@@ -168,7 +207,7 @@ public class DonationServiceImpl implements DonationService {
         DonationDTO dto = new DonationDTO();
         dto.setId(donation.getId());
         dto.setDonationName(donation.getDonationName());
-        dto.setDonarDetails(mapToUserDetailDTO(donation.getDonarDetails()));
+        dto.setDonarDetails(mapToUserDetailDTO(donation.getDonerDetails()));
         dto.setPickUpAddress(donation.getPickUpAddress());
         dto.setPickUpTime(donation.getPickUpTime());
         dto.setEstimatedQuantity(mapToQuantityDTO(donation.getEstimatedQuantity()));

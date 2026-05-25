@@ -25,7 +25,7 @@ public class Donation {
     private String donationName;
 
     @Embedded
-    private UserDetail donarDetails;
+    private UserDetail donerDetails;
 
     private String pickUpAddress;
 
