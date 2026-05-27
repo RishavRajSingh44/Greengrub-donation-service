@@ -184,6 +184,7 @@ public class DonationServiceImpl implements DonationService {
                 totalAmount,
                 dto.getCreationDate() != null ? dto.getCreationDate() : LocalDateTime.now(),
                 "GreenGrub",
+                dto.getStatus() != null ? dto.getStatus().name() : DonationStatus.ACTIVE.name(),
                 customer,
                 items
         );

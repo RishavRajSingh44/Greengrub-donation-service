@@ -11,6 +11,7 @@ public record DonationEventDTO(
         BigDecimal totalAmount,
         LocalDateTime createdAt,
         String organizationName,
+        String status,
         CustomerDTO customer,
         List<DonationItemDTO> items
 ) {
