@@ -89,7 +89,7 @@ public class FoodServiceClient {
                 .status(food.getStatus())
                 .requestedBy(food.getRequestedBy())
                 .requestedDate(food.getRequestedDate())
-                .usedByDate(food.hasUsedByDate() ? food.getUsedByDate() : null)
+                .usedByDate(food.getUsedByDate().isEmpty() ? null : food.getUsedByDate())
                 .build();
     }
 }

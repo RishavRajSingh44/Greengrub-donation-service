@@ -231,11 +231,11 @@ public class DonationServiceImpl implements DonationService {
 
     private Quantity mapToQuantityEntity(QuantityDTO dto) {
         if (dto == null) return null;
-        return new Quantity(dto.getAmount(), dto.getUnit());
+        return new Quantity(dto.getAmount() != null ? BigDecimal.valueOf(dto.getAmount()) : null, dto.getUnit());
     }
 
     private QuantityDTO mapToQuantityDTO(Quantity quantity) {
         if (quantity == null) return null;
-        return new QuantityDTO(quantity.getAmount(), quantity.getUnit());
+        return new QuantityDTO(quantity.getAmount() != null ? quantity.getAmount().doubleValue() : null, quantity.getUnit());
     }
 }

@@ -25,6 +25,13 @@ public class Donation {
     private String donationName;
 
     @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "userId",    column = @Column(name = "doner_details_user_id")),
+            @AttributeOverride(name = "firstName", column = @Column(name = "doner_details_first_name")),
+            @AttributeOverride(name = "lastName",  column = @Column(name = "doner_details_last_name")),
+            @AttributeOverride(name = "email",     column = @Column(name = "doner_details_email")),
+            @AttributeOverride(name = "phone",     column = @Column(name = "doner_details_phone"))
+    })
     private UserDetail donerDetails;
 
     private String pickUpAddress;
@@ -32,6 +39,10 @@ public class Donation {
     private LocalDateTime pickUpTime;
 
     @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "amount", column = @Column(name = "estimated_quantity_amount")),
+            @AttributeOverride(name = "unit",   column = @Column(name = "estimated_quantity_unit"))
+    })
     private Quantity estimatedQuantity;
 
     @ElementCollection

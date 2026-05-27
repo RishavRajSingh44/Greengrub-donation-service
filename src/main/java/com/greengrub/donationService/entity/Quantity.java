@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 @Embeddable
 @Getter
 @Setter
@@ -15,7 +17,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class Quantity {
 
-    private Double amount;
+    private BigDecimal amount;
 
     @Enumerated(EnumType.STRING)
     private Unit unit;
