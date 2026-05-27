@@ -90,19 +90,19 @@ public class DonationGrpcService extends DonationServiceGrpc.DonationServiceImpl
 
     @Override
     public void getFoodItemsByDonationId(FoodListRequest request, StreamObserver<FoodListResponse> responseObserver) {
-        // Fetch the donation to get the full food ID list, then hydrate from food-service
-        DonationDetailDTO detail = donationService.getDonationDetail(
-                request.getDonationId(),
-                request.getPage(),
-                request.getPageSize() > 0 ? request.getPageSize() : 10);
+        List<String> foodIds = request.getFoodItemIdList();
+        int page = request.getPage();
+        int pageSize = request.getPageSize() > 0 ? request.getPageSize() : 10;
+
+        List<FoodDetailDTO> foods = foodServiceClient.getFoodsPage(foodIds, page, pageSize);
+        int totalCount = foodIds.size();
 
         FoodListResponse.Builder builder = FoodListResponse.newBuilder()
-                .setTotalCount(detail.getTotalFoodItems())
-                .setPage(detail.getCurrentPage())
-                .setPageSize(detail.getPageSize())
-                .setTotalPages(detail.getTotalPages());
+                .setTotalCount(totalCount)
+                .setPage(page)
+                .setPageSize(pageSize);
 
-        for (FoodDetailDTO food : detail.getFoodItems()) {
+        for (FoodDetailDTO food : foods) {
             builder.addFoods(Food.newBuilder()
                     .setFoodId(food.getId())
                     .setFoodName(food.getFoodName())
