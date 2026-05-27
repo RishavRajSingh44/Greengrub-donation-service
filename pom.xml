@@ -113,6 +113,12 @@
             <artifactId>spring-kafka</artifactId>
         </dependency>
 
+        <!-- Eureka Client -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+        </dependency>
+
         <!-- Actuator -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -212,6 +218,7 @@
                 </configuration>
             </plugin>
         </plugins>
+        <finalName>donation-service</finalName>
     </build>
 
 </project>

@@ -76,3 +76,15 @@ resilience4j:
         permitted-number-of-calls-in-half-open-state: 3
         register-health-indicator: true
         automatic-transition-from-open-to-half-open-enabled: true
+
+logging:
+  level:
+    root: INFO
+    com.greengrub: DEBUG          # or INFO in production
+    org.springframework: INFO
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+eureka:
+    client:
+      enabled: false
