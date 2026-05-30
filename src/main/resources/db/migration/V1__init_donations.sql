@@ -21,7 +21,7 @@ CREATE TABLE donations (
     pick_up_time                TIMESTAMP,
 
     -- @Embedded Quantity (field: estimatedQuantity)
-    estimated_quantity_amount   NUMERIC(12, 2),
+    estimated_quantity_amount   DOUBLE PRECISION,
     estimated_quantity_unit     VARCHAR(32),
 
     status                      VARCHAR(32)     NOT NULL,
