@@ -8,6 +8,7 @@ import com.greengrub.proto.foods.GetFoodsByIdsRequest;
 import com.greengrub.proto.foods.GetFoodsByIdsResponse;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
+import com.greengrub.proto.foods.Unit;
 import io.grpc.StatusRuntimeException;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
@@ -81,11 +82,13 @@ public class FoodServiceClient {
     }
 
     private static FoodDetailDTO toDto(Food food) {
+        com.greengrub.proto.foods.Quantity q = food.getQuantity();
+        boolean hasQuantity = q.getAmount() != 0.0 || q.getUnit() != Unit.UNIT_UNSPECIFIED;
         return FoodDetailDTO.builder()
                 .id(food.getId())
                 .foodName(food.getFoodName())
-                .quantityAmount(food.getQuantity().getAmount())
-                .quantityUnit(food.getQuantity().getUnit().name())
+                .quantityAmount(hasQuantity ? q.getAmount() : null)
+                .quantityUnit(hasQuantity ? q.getUnit().name() : null)
                 .status(food.getStatus())
                 .requestedBy(food.getRequestedBy())
                 .requestedDate(food.getRequestedDate())
