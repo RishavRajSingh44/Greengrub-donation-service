@@ -1,13 +1,12 @@
-# ──────────────────────── GCP Cloud SQL ─────────────────────────
+# ──────────────────────── Direct JDBC (Cloud SQL public IP) ──────────────────
 spring:
   cloud:
     gcp:
       sql:
-        enabled: true
-        database-name: ${DONATION_DATABASE_NAME:donations}
-        instance-connection-name: ${CLOUD_SQL_INSTANCE}
+        enabled: false   # Cloud SQL auto-config disabled; using direct JDBC URL
 
   datasource:
+    url: ${SPRING_DATASOURCE_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     hikari:
@@ -86,5 +85,5 @@ logging:
     console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
 
 eureka:
-    client:
-      enabled: false
+  client:
+    enabled: false
