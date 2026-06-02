@@ -16,6 +16,11 @@ spring:
       idle-timeout: 300000
       max-lifetime: 1200000
 
+  flyway:
+    table: flyway_schema_history_donation
+    baseline-on-migrate: true
+    baseline-version: 0
+
   # ──────────────────────── JPA / Hibernate ─────────────────────
   jpa:
     hibernate:
