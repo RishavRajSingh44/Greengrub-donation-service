@@ -7,6 +7,7 @@ import com.greengrub.donationService.dto.*;
 import com.greengrub.donationService.entity.DonationStatus;
 import com.greengrub.donationService.entity.Unit;
 import com.greengrub.donationService.kafka.DonationKafkaProducer;
+import com.greengrub.donationService.repository.DonationRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,7 +15,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDateTime;
@@ -26,7 +26,6 @@ import static org.mockito.Mockito.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class DonationApiTest {
 
@@ -35,6 +34,9 @@ class DonationApiTest {
 
     @Autowired
     TestRestTemplate rest;
+
+    @Autowired
+    DonationRepository donationRepository;
 
     @MockBean
     DonationKafkaProducer kafkaProducer;
@@ -46,6 +48,7 @@ class DonationApiTest {
 
     @BeforeEach
     void setUp() {
+        donationRepository.deleteAll();
         objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
