@@ -1,8 +1,8 @@
 # ──────────────────────────────────────────────────────────────────────────────
 # Donation Service  –  Deployment + HPA + Service
 # Namespace : services
-# Resource Plan : CPU req 150m / limit 300m | Mem req 200Mi / limit 450Mi
-# HPA : minReplicas 1, maxReplicas 2, CPU 65%, Memory 75%
+# Resource Plan : CPU req 50m / limit 300m | Mem req 150Mi / limit 280Mi
+# HPA : minReplicas 1, maxReplicas 1, CPU 65%, Memory 75%
 # NOTE: Running on self-managed kubeadm cluster (not GKE).
 #       Cloud SQL is reached via its public IP (SPRING_DATASOURCE_URL).
 #       Cloud SQL Auth Proxy sidecar is not used.
@@ -85,10 +85,10 @@ spec:
           resources:
             requests:
               cpu:    "50m"
-              memory: "200Mi"
+              memory: "150Mi"
             limits:
               cpu:    "300m"
-              memory: "450Mi"
+              memory: "280Mi"
           startupProbe:
             httpGet:
               path: /actuator/health/liveness
@@ -124,7 +124,7 @@ spec:
     kind: Deployment
     name: donation-service
   minReplicas: 1
-  maxReplicas: 2
+  maxReplicas: 1
   metrics:
     - type: Resource
       resource:
